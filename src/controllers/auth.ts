@@ -10,7 +10,7 @@ import {
   validatePassword,
   validateToken,
 } from "../functions/validate";
-import { compareSalt, hashIt } from "../functions/encrypt";
+import { hashIt } from "../functions/encrypt";
 import { isEmailTaken, isNameTaken } from "../functions/query";
 import { secretKey } from "../config/secretKey";
 
@@ -32,9 +32,9 @@ export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   validateEmail(email);
   validatePassword(password);
-  const [user] = await userModel.find({ email: email });
+  const user = await userModel.findOne({ email: email });
   if (!user) throw new CError("User not found", 404);
-  const comparedPasswords = compareSalt(user.password, password);
+  const comparedPasswords = user.comparePassword(password);
   if (!comparedPasswords) throw new CError("Invalid password", 401);
   const jwtKey = hashIt(secretKey);
   const token = jsonwebtoken.sign({ userId: user.id }, jwtKey, { expiresIn: "5m" });

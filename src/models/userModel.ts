@@ -1,10 +1,10 @@
-import { IUser } from "../interfaces";
 import mongoose from "mongoose";
 import { validateEmail, validateHobbies, validateId, validateName, validatePassword } from "../functions/validate";
 import { isValidNumber } from "../functions/confirm";
-import { saltIt } from "../functions/encrypt";
+import { compareSalt, saltIt } from "../functions/encrypt";
+import { IUserDocument, IUserModel } from "./user";
 
-const userSchema = new mongoose.Schema<IUser>({
+const userSchema = new mongoose.Schema<IUserDocument>({
   id: {
     type: Number,
     immutable: true,
@@ -58,6 +58,14 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-const userModel = mongoose.model<IUser>("User", userSchema);
+userSchema.methods.comparePassword = function (password: string) {
+  return compareSalt(this.password, password);
+};
+
+userSchema.statics.findByQueries = function (order: string, limit: number, offset: number): Promise<IUserDocument[]> {
+  return this.find().sort({ id: order }).limit(limit).skip(offset);
+};
+
+const userModel = mongoose.model<IUserDocument, IUserModel>("User", userSchema);
 
 export default userModel;

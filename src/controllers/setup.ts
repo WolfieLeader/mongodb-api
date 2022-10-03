@@ -5,7 +5,6 @@ import companyModel from "../models/companyModel";
 import { defaultUsers } from "../config/setup/users";
 import { defaultCompanies } from "../config/setup/companies";
 import { stringToBigNumber } from "../functions/format";
-import { Types } from "mongoose";
 
 /**Showing the database connection settings */
 export const getSettings = (req: Request, res: Response) => {
@@ -38,14 +37,6 @@ export const resetTables = async (req: Request, res: Response) => {
     await newCompany.save();
   }
 
-  const companies = await companyModel.find().populate("founders", "name");
-  const filteredCompanies = companies.map((company) => {
-    return {
-      Company: company.name,
-      // @ts-ignore
-      Founders: company.founders.map((founder: IUser) => founder.name),
-    };
-  });
-
-  res.status(200).json(filteredCompanies);
+  const companies = await companyModel.findNamesAndFounders();
+  res.status(200).json(companies);
 };
