@@ -5,18 +5,15 @@ import {
   validatePassword,
   validateId,
   validateHobbies,
-  validateToken,
-  validateDecoded,
   validateCompanyName,
 } from "../validate";
-import jsonwebtoken from "jsonwebtoken";
-import { secretKey } from "../../config/secretKey";
-import { hashIt } from "../encrypt";
+import mongoose from "mongoose";
 
+const ObjectId = mongoose.Types.ObjectId;
+const newObjectId = new ObjectId();
 const empty = undefined;
 const aNumber = 123;
 const aString = "Test";
-const bigNumber = 2 ** 53;
 const strLength = (n: number) => "a".repeat(n);
 
 const testEmail = () => {
@@ -59,13 +56,11 @@ const testPassword = () => {
 
 const testId = () => {
   it("Should return true if id is valid", () => {
-    expect(validateId(3)).toBe(true);
+    expect(validateId(newObjectId)).toBe(true);
   });
   it("Should throw errors if id is invalid", () => {
     expect(() => validateId(empty)).toThrow("Missing Id");
-    expect(() => validateId(aString)).toThrow("Invalid Id Type");
-    expect(() => validateId(-1)).toThrow("Id Must Be Positive");
-    expect(() => validateId(bigNumber)).toThrow("Out Of Range");
+    expect(() => validateId(3232134432)).toThrow("Invalid Id Type");
   });
 };
 
@@ -90,42 +85,6 @@ const testHobbies = () => {
   });
 };
 
-const testToken = () => {
-  const jwtKey = hashIt(secretKey);
-  it("Should return true if token is valid", () => {
-    const token = jsonwebtoken.sign({ userId: 23 }, jwtKey, { expiresIn: "5m" });
-    expect(validateToken(token)).toBe(true);
-  });
-  it("Should throw errors if token is invalid", async () => {
-    expect(() => validateToken(empty)).toThrow("Missing Token");
-    expect(() => validateToken(aNumber)).toThrow("Invalid Token Type");
-    expect(() => validateToken(aString)).toThrow("jwt malformed");
-    const shortToken = jsonwebtoken.sign({ userId: 23 }, jwtKey, { expiresIn: "500ms" });
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    expect(() => validateToken(shortToken)).toThrow("jwt expired");
-    const fakeToken = jsonwebtoken.sign({ userId: 23 }, "Fake Secret", { expiresIn: "5m" });
-    expect(() => validateToken(fakeToken)).toThrow("invalid signature");
-    const manipulatedToken = jsonwebtoken.sign({ userId: 23 }, jwtKey, { expiresIn: "5m" }).slice(2, -1);
-    expect(() => validateToken(manipulatedToken)).toThrow("invalid token");
-  });
-};
-
-const testDecoded = () => {
-  const jwtKey = hashIt(secretKey);
-  it("Should return true if decoded is valid", () => {
-    const decoded = jsonwebtoken.decode(jsonwebtoken.sign({ userId: 23 }, jwtKey, { expiresIn: "5m" }));
-    expect(validateDecoded(decoded)).toBe(true);
-  });
-  it("Should throw errors if decoded is invalid", () => {
-    expect(() => validateDecoded(empty)).toThrow("Missing Token Content");
-    expect(() => validateDecoded(aNumber)).toThrow("Invalid Token Content Type");
-    expect(() => validateDecoded({})).toThrow("Missing Id");
-    expect(() => validateDecoded({ userId: aString })).toThrow("Invalid Id Type");
-    expect(() => validateDecoded({ userId: -1 })).toThrow("Id Must Be Positive");
-    expect(() => validateDecoded({ userId: bigNumber })).toThrow("Out Of Range");
-  });
-};
-
 const testCompanyName = () => {
   it("Should return true if the company is valid", () => {
     expect(validateName("Wolfie Company")).toBe(true);
@@ -145,7 +104,5 @@ describe("Testing validate.ts Folder", () => {
   describe("Testing validatePassword Function", testPassword);
   describe("Testing validateId Function", testId);
   describe("Testing validateHobbies Function", testHobbies);
-  describe("Testing validateToken Function", testToken);
-  describe("Testing validateDecoded Function", testDecoded);
   describe("Testing validateCompanyName Function", testCompanyName);
 });

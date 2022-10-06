@@ -16,27 +16,30 @@ export const resetTables = async (req: Request, res: Response) => {
   await companyModel.deleteMany({});
   await userModel.deleteMany({});
 
-  for (const user of defaultUsers) {
-    const newUser = new userModel({
+  const users = defaultUsers.map((user) => {
+    return {
       name: user.name,
       email: user.email,
       password: user.password,
       networth: user.networth ? stringToBigNumber(user.networth) : 0,
       hobbies: user.hobbies ? user.hobbies : [],
-    });
-    await newUser.save();
-  }
+    };
+  });
+  await userModel.insertMany(users);
 
-  for (const company of defaultCompanies) {
-    const foundersIds = await userModel.find({ name: { $in: company.foundersNames } }).select("_id");
-    const newCompany = new companyModel({
-      name: company.name,
-      founders: foundersIds,
-      year: company.year,
-    });
-    await newCompany.save();
-  }
+  const companies = await Promise.all(
+    defaultCompanies.map(async (company) => {
+      const foundersIds = await userModel.find({ name: { $in: company.foundersNames } }).select("_id");
+      return {
+        name: company.name,
+        founders: foundersIds,
+        year: company.year,
+      };
+    })
+  );
 
-  const companies = await companyModel.findNamesAndFounders();
-  res.status(200).json(companies);
+  await companyModel.insertMany(companies);
+
+  const results = await companyModel.findNamesAndFounders();
+  res.status(200).json(results);
 };

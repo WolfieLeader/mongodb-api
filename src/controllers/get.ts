@@ -21,25 +21,8 @@ export const getUsers = async (req: Request, res: Response) => {
 
 /**Getting all the companies */
 export const getCompanies = async (req: Request, res: Response) => {
-  const companies = await companyModel.find();
-  if (!companies || companies.length < 1) throw new CError("No companies found", 404);
-  res.status(200).json(companies);
-};
-
-/**Getting users by given Ids */
-export const getUsersById = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const ids = formatParamsToNumbers(id);
-  const users = await userModel.find({ id: { $in: ids } });
-  if (!users || users.length < 1) throw new CError("No users found", 404);
-  res.status(200).json(users);
-};
-
-/**Getting companies by given Ids */
-export const getCompaniesById = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const ids = formatParamsToNumbers(id);
-  const companies = await companyModel.find({ id: { $in: ids } });
+  const { order, limit, offset } = addQueries(req);
+  const companies = await companyModel.findByQueries(order, limit, offset);
   if (!companies || companies.length < 1) throw new CError("No companies found", 404);
   res.status(200).json(companies);
 };

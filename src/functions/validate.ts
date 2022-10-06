@@ -3,6 +3,7 @@ import jsonwebtoken from "jsonwebtoken";
 import { hashIt } from "./encrypt";
 import { secretKey } from "../config/secretKey";
 import { isValidNumber, isValidString } from "./confirm";
+import mongoose from "mongoose";
 
 /**Checking if the email is valid using regex */
 const isEmail = (email: string): boolean => {
@@ -66,7 +67,12 @@ export const validateHobbies = (hobbies: unknown): boolean => {
 
 /**Validating that the id is valid*/
 export const validateId = (id: unknown): boolean => {
-  isValidNumber(id, "Id");
+  const ObjectId = mongoose.Types.ObjectId;
+  if (!id) throw new CError("Missing Id", 400);
+  if (!(typeof id === "string" || typeof id === "object")) throw new CError("Invalid Id Type", 400);
+  const idStr = id.toString();
+  if (!ObjectId.isValid(idStr)) throw new CError("Invalid Id", 400);
+  if (new ObjectId(idStr).toString() !== idStr) throw new CError("Invalid Id", 400);
   return true;
 };
 

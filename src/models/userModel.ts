@@ -1,15 +1,9 @@
 import mongoose from "mongoose";
-import { validateEmail, validateHobbies, validateId, validateName, validatePassword } from "../functions/validate";
-import { isValidNumber } from "../functions/confirm";
-import { compareSalt, saltIt } from "../functions/encrypt";
-import { IUserDocument, IUserModel } from "./user";
+import { compareSalt } from "../functions/encrypt";
+import { IUser, IUserDocument, IUserModel } from "./user";
+import { preUserSave } from "./preSaves";
 
 const userSchema = new mongoose.Schema<IUserDocument>({
-  id: {
-    type: Number,
-    immutable: true,
-    unique: true,
-  },
   name: {
     type: String,
     required: true,
@@ -36,34 +30,29 @@ const userSchema = new mongoose.Schema<IUserDocument>({
   createdAt: { type: Date, immutable: true },
 });
 
-userSchema.pre("save", async function (next) {
-  const model = mongoose.model("User", userSchema);
-  const newId = (await model.countDocuments()) + 1;
-
-  validateId(newId);
-  validateName(this.name);
-  validateEmail(this.email);
-  validatePassword(this.password);
-  if (this.networth) isValidNumber(this.networth, "Networth", true);
-  if (Array.isArray(this.hobbies) && this.hobbies.length > 0) validateHobbies(this.hobbies);
-
-  this.id = newId;
-  this.name = this.name;
-  this.email = this.email;
-  this.password = saltIt(this.password);
-  this.networth = this.networth ? this.networth : 0;
-  this.hobbies = Array.isArray(this.hobbies) && this.hobbies.length > 0 ? this.hobbies : [];
-  this.createdAt = new Date();
-
+userSchema.pre("save", function (next) {
+  //Possible since there aren't any pointers in javascript
+  const user = this;
+  preUserSave(user);
   next();
 });
 
-userSchema.methods.comparePassword = function (password: string) {
-  return compareSalt(this.password, password);
+userSchema.pre("insertMany", function (next, docs) {
+  const users = docs as IUser[];
+  if (!Array.isArray(users)) throw new Error("insertMany must be an array");
+  if (users.length < 1) throw new Error("insertMany must have at least one user");
+  users.forEach((user) => preUserSave(user));
+  next();
+});
+
+userSchema.methods.comparePassword = function (password: string): boolean {
+  const user = this;
+  return compareSalt(user.password, password);
 };
 
 userSchema.statics.findByQueries = function (order: string, limit: number, offset: number): Promise<IUserDocument[]> {
-  return this.find().sort({ id: order }).limit(limit).skip(offset);
+  const users = this;
+  return users.find().sort({ name: order }).limit(limit).skip(offset);
 };
 
 const userModel = mongoose.model<IUserDocument, IUserModel>("User", userSchema);

@@ -1,30 +1,23 @@
 import mongoose from "mongoose";
+import { IUser } from "./user";
 
 export interface ICompany {
-  readonly id: number;
   name: string;
-  founders: mongoose.Types.ObjectId[];
+  founders: ObjectId[] | IUser[];
   year: number | null;
 }
+export interface ICompanyDocument extends ICompany, mongoose.Document {}
 
-export interface ICompanyDocument extends ICompany, mongoose.Document {
-  id: number;
+interface ICompanyModel extends mongoose.Model<ICompanyDocument> {
+  findByQueries: (order: string, limit: number, offset: number) => Promise<ICompanyDocument[]>;
+  findNamesAndFounders: () => Promise<FilteredCompany[]>;
+}
+
+export interface IPopulatedCompanyDocument extends ICompany, mongoose.Document {
+  founders: IUser[];
 }
 
 export interface FilteredCompany {
   Company: string;
   Founders: string[];
-}
-
-export interface PopulatedCompany {
-  name: string;
-  founders: {
-    _id: mongoose.Types.ObjectId;
-    name: string;
-  }[];
-}
-
-interface ICompanyModel extends mongoose.Model<ICompanyDocument> {
-  findByQueries: (order: string, limit: number, offset: number) => Promise<ICompanyDocument[]>;
-  findNamesAndFounders: () => Promise<FilteredCompany[]>;
 }

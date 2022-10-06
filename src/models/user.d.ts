@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
 export interface IUser {
-  readonly id: number;
   name: string;
   networth: number;
   hobbies: string[] | null;
@@ -11,7 +10,6 @@ export interface IUser {
 }
 
 export interface IUserDocument extends IUser, mongoose.Document {
-  id: number;
   comparePassword: (password: string) => boolean;
 }
 

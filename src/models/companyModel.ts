@@ -1,13 +1,8 @@
 import mongoose from "mongoose";
-import { validateCompanyName, validateId, validateYear } from "../functions/validate";
-import { ICompanyDocument, FilteredCompany, PopulatedCompany, ICompanyModel } from "./company";
+import { ICompanyDocument, IPopulatedCompanyDocument, FilteredCompany, ICompanyModel, ICompany } from "./company";
+import { preCompanySave } from "./preSaves";
 
 const companySchema = new mongoose.Schema<ICompanyDocument>({
-  id: {
-    type: Number,
-    unique: true,
-    immutable: true,
-  },
   name: {
     type: String,
     required: true,
@@ -25,19 +20,18 @@ const companySchema = new mongoose.Schema<ICompanyDocument>({
   },
 });
 
-companySchema.pre("save", async function (next) {
+companySchema.pre("save", function (next) {
+  //Possible since there aren't any pointers in javascript
   const company = this;
+  preCompanySave(company);
+  next();
+});
 
-  const model = mongoose.model("Company", companySchema);
-  const newId = (await model.countDocuments()) + 1;
-  validateId(newId);
-  validateCompanyName(company.name);
-  if (company.year) validateYear(company.year);
-
-  company.id = newId;
-  company.name = company.name;
-  company.founders = company.founders;
-  company.year = company.year ? company.year : null;
+companySchema.pre("insertMany", function (next, docs) {
+  const companies = docs as ICompany[];
+  if (!Array.isArray(companies)) throw new Error("insertMany must be an array");
+  if (companies.length < 1) throw new Error("insertMany must have at least one company");
+  companies.forEach((company) => preCompanySave(company));
   next();
 });
 
@@ -47,13 +41,16 @@ companySchema.statics.findByQueries = function (
   offset: number
 ): Promise<ICompanyDocument[]> {
   const companies = this;
-  return companies.find().sort(order).limit(limit).skip(offset).exec();
+  return companies.find().sort({ name: order }).limit(limit).skip(offset);
 };
 
 companySchema.statics.findNamesAndFounders = async function (): Promise<FilteredCompany[]> {
   const companies = this;
 
-  const populatedCompanies: PopulatedCompany[] = await companies.find().populate("founders", "name");
+  const populatedCompanies: IPopulatedCompanyDocument[] = await companies
+    .find()
+    .populate("founders", "name")
+    .sort({ name: "asc" });
 
   const filteredCompanies: FilteredCompany[] = populatedCompanies.map((company) => {
     return {
