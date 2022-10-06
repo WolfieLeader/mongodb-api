@@ -69,7 +69,8 @@ export const validateHobbies = (hobbies: unknown): boolean => {
 export const validateId = (id: unknown): boolean => {
   const ObjectId = mongoose.Types.ObjectId;
   if (!id) throw new CError("Missing Id", 400);
-  if (!(typeof id === "string" || typeof id === "object")) throw new CError("Invalid Id Type", 400);
+  if (!(typeof id === "string" || typeof id === "object" || typeof id === "number"))
+    throw new CError("Invalid Id Type", 400);
   const idStr = id.toString();
   if (!ObjectId.isValid(idStr)) throw new CError("Invalid Id", 400);
   if (new ObjectId(idStr).toString() !== idStr) throw new CError("Invalid Id", 400);
