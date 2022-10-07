@@ -2,14 +2,14 @@ import mongoose from "mongoose";
 
 export interface IUser {
   name: string;
-  networth: number;
-  hobbies: string[] | null;
   email: string;
   password: string;
-  createdAt: Date;
+  networth: number;
+  hobbies: string[] | null;
 }
 
 export interface IUserDocument extends IUser, mongoose.Document {
+  createdAt: Date;
   comparePassword: (password: string) => boolean;
 }
 
