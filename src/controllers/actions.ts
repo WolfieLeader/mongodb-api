@@ -46,8 +46,7 @@ export const changePassword = async (req: Request, res: Response) => {
   validatePassword(password);
   const user = await userModel.findById(userId);
   if (!user) throw new CError("User not found", 404);
-  const comparedPasswords = user.comparePassword(last);
-  if (!comparedPasswords) throw new CError("Wrong Password", 401);
+  if (!user.comparePassword(last)) throw new CError("Wrong Password", 401);
   await userModel.findByIdAndUpdate(userId, { password: password });
   res.status(200).json({ message: "Password changed successfully" });
 };
