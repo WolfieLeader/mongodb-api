@@ -32,8 +32,7 @@ export const changeEmail = async (req: Request, res: Response) => {
   const { email } = req.body;
   validateId(userId);
   validateEmail(email);
-  const isTaken = await isEmailTaken(email.toLowerCase());
-  if (isTaken) throw new CError("Email already taken", 409);
+  if (await isEmailTaken(email.toLowerCase())) throw new CError("Email already taken", 409);
   await userModel.findByIdAndUpdate(userId, { email: email });
   res.status(200).json({ message: "Email changed successfully", email: email });
 };

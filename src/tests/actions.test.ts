@@ -3,8 +3,8 @@ import request from "supertest";
 import app from "../config/app";
 import TEST_CONNECTION_URL from "../config/mongodb/test";
 import mongoose from "mongoose";
-import { defaultUsers } from "../config/setup/users";
 import { bigNumberToString } from "../functions/format";
+import { defaultUsers } from "../config/default/default";
 
 describe("Testing Users", () => {
   /**Opens the server before all the tests */

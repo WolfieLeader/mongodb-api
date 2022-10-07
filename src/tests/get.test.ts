@@ -3,8 +3,8 @@ import request from "supertest";
 import app from "../config/app";
 import TEST_CONNECTION_URL from "../config/mongodb/test";
 import mongoose from "mongoose";
-import { defaultUsers } from "../config/setup/users";
-import { defaultCompanies } from "../config/setup/companies";
+import { defaultUsers } from "../config/default/default";
+import { defaultCompanies } from "../config/default/companies";
 
 describe("Testing Users", () => {
   /**Opens the server before all the tests */

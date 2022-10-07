@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 import companyModel from "../models/companyModel";
 import userModel from "../models/userModel";
 
@@ -21,11 +20,4 @@ export const isCompanyNameTaken = async (name: string): Promise<boolean> => {
   const [takenCompanyName] = await companyModel.find({ name: name });
   if (Array.isArray(takenCompanyName) && takenCompanyName.length > 0) return true;
   return false;
-};
-
-/**Getting the user id by the user's name */
-export const getUserIdByName = async (name: string): Promise<Types.ObjectId | number> => {
-  const user = await userModel.findOne({ name: name });
-  if (user) return user._id;
-  return -1;
 };

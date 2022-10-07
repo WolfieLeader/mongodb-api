@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import CONNECTION_URL from "../config/mongodb/url";
 import userModel from "../models/userModel";
 import companyModel from "../models/companyModel";
-import { defaultUsers } from "../config/setup/users";
-import { defaultCompanies } from "../config/setup/companies";
+import { defaultUsers } from "../config/default/default";
+import { defaultCompanies } from "../config/default/companies";
 import { stringToBigNumber } from "../functions/format";
 
 /**Showing the database connection settings */

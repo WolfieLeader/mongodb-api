@@ -6,7 +6,7 @@ export interface IUser {
   hobbies: string[] | null;
   email: string;
   password: string;
-  readonly createdAt: Date;
+  createdAt: Date;
 }
 
 export interface IUserDocument extends IUser, mongoose.Document {
