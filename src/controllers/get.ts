@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import userModel from "../models/userModel";
 import CError from "../error/CError";
-import { formatParamsToNumbers } from "../functions/format";
 import companyModel from "../models/companyModel";
 import { addQueries } from "../config/mongodb/availableQueries";
 

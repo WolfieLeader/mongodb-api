@@ -39,7 +39,7 @@ describe("Testing Users", () => {
         const order = "desc",
           limit = 3,
           offset = 2;
-        const res = await request(app).get(`/users?order=${order}&&limit=${limit}&&offset=${offset}`);
+        const res = await request(app).get(`/users?order=${order}&limit=${limit}&offset=${offset}`);
         expect(res.statusCode).toBe(200);
         expect(res.body).toBeInstanceOf(Array);
         const expectedResults = defaultUsers
@@ -62,7 +62,7 @@ describe("Testing Users", () => {
         const order = "desc",
           limit = 4,
           offset = 2;
-        const res = await request(app).get(`/companies?order=${order}&&limit=${limit}&&offset=${offset}`);
+        const res = await request(app).get(`/companies?order=${order}&limit=${limit}&offset=${offset}`);
         expect(res.statusCode).toBe(200);
         expect(res.body).toBeInstanceOf(Array);
         const expectedResults = defaultCompanies
