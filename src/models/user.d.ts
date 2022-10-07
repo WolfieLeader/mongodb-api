@@ -9,7 +9,7 @@ export interface IUser {
 }
 
 export interface IUserDocument extends IUser, mongoose.Document {
-  createdAt: Date;
+  readonly createdAt: Date;
   comparePassword: (password: string) => boolean;
 }
 
